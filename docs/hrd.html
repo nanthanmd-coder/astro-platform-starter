@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-A-Mole Challenge</title>
+    <style>
+        body { 
+            background-color: #2c3e50; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+        
+        #game-canvas {
+            width: 800px;
+            height: 600px;
+            background-color: #34495e;
+            position: relative;
+            border: 5px solid #ecf0f1;
+            display: none;
+            border-radius: 15px;
+        }
+
+        .score-board {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 22px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 100;
+        }
+
+        .item {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: white; /* White fill as requested */
+            cursor: crosshair;
+            display: none;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Intro Screen */
+        #intro { 
+            text-align: center; 
+            max-width: 600px; 
+            padding: 40px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 20px; 
+        }
+        .tutorial-grid { display: flex; justify-content: center; gap: 15px; margin: 25px 0; flex-wrap: wrap; }
+        .t-item { 
+            position: relative; 
+            width: 75px; 
+            height: 75px; 
+            background-size: contain; 
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: white; 
+            border-radius: 10px; 
+        }
+        .symbol { position: absolute; bottom: -10px; right: -10px; font-size: 24px; font-weight: bold; text-shadow: 1px 1px 2px black; }
+        .correct { color: #2ecc71; }
+        .wrong { color: #e74c3c; }
+
+        .start-btn { 
+            padding: 15px 45px; 
+            font-size: 24px; 
+            cursor: pointer; 
+            background-color: #2ecc71; 
+            border: none; 
+            color: white; 
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .start-btn:hover { transform: scale(1.05); background-color: #27ae60; }
+
+        /* Result Overlay */
+        #result-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 80, 0.98);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 200;
+            border-radius: 10px;
+        }
+
+        .next-btn {
+            padding: 15px 35px;
+            font-size: 22px;
+            background-color: #f1c40f;
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 10px;
+            margin-top: 25px;
+            transition: background 0.2s;
+        }
+        .next-btn:hover { background-color: #f39c12; }
+
+        .retry-link {
+            margin-top: 20px;
+            cursor: pointer;
+            text-decoration: underline;
+            color: #bdc3c7;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="intro">
+    <h1>WHACK-A-MOLE</h1>
+    <p>Hit the Moles, Avoid the Trap!</p>
+    
+    <div class="tutorial-grid">
+        <div class="t-item" style="background-image: url('mole1.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole2.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole3.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole4.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole5.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole6.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole7.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole8.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole9.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('mole10.jpg');"><span class="symbol correct">✔</span></div>
+        <div class="t-item" style="background-image: url('nonMole1.jpg');"><span class="symbol wrong">✘</span></div>
+        <div class="t-item" style="background-image: url('nonMole2.jpg');"><span class="symbol wrong">✘</span></div>
+        <div class="t-item" style="background-image: url('nonMole3.jpg');"><span class="symbol wrong">✘</span></div>
+    </div>
+    
+    <p style="opacity: 0.8;">Score 27+ to Win | Hit: +1 | Miss-click: -2</p>
+    <button class="start-btn" onclick="startGame()">START GAME</button>
+</div>
+
+<div id="game-canvas">
+    <div class="score-board">
+        Score: <span id="score">0</span> | Missed Moles: <span id="missed">0</span>
+    </div>
+    
+    <div id="target" class="item"></div>
+
+    <div id="result-screen">
+        <h1 id="result-title">SUCCESS!</h1>
+        <p id="result-score">Final Score: 0</p>
+        <a href="https://lucent-cheesecake-bc5a60.netlify.app" class="next-btn" id="next-link">NEXT GAME</a>
+<div class="retry-link" onclick="location.reload()">Back to Start</div>
+    </div>
+</div>
+
+
+<script>
+    let score = 0;
+    let molesLeft = 30;
+    let nonMolesLeft = 8;
+    let missedCount = 0;
+    let gameActive = false;
+    let currentTimer = null;
+
+    const target = document.getElementById('target');
+    const scoreEl = document.getElementById('score');
+    const missedEl = document.getElementById('missed');
+    const resultScreen = document.getElementById('result-screen');
+
+    function startGame() {
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('game-canvas').style.display = 'block';
+        gameActive = true;
+        score = 0;
+        molesLeft = 30;
+        nonMolesLeft = 8;
+        missedCount = 0;
+        updateUI();
+        runGameLogic();
+    }
+
+    function updateUI() {
+        scoreEl.textContent = score;
+        missedEl.textContent = missedCount;
+    }
+
+    function runGameLogic() {
+        if (!gameActive) return;
+
+        if (molesLeft <= 0 && nonMolesLeft <= 0) {
+            endGame();
+            return;
+        }
+
+        let isMole = true;
+        if (nonMolesLeft > 0 && (molesLeft <= 0 || Math.random() < 0.25)) {
+            isMole = false;
+        }
+
+        if (isMole) {
+            const num = Math.floor(Math.random() * 10) + 1;
+            target.style.backgroundImage = `url('mole${num}.jpg')`;
+            target.dataset.type = 'mole';
+            molesLeft--;
+        } else {
+    const nonNum = Math.floor(Math.random() * 3) + 1; 
+    target.style.backgroundImage = `url('nonMole${nonNum}.jpg')`;
+    target.dataset.type = 'nonMole';
+    nonMolesLeft--;
+}
+
+        // Random positioning
+        const maxX = 800 - 100;
+        const maxY = 600 - 100;
+        target.style.left = Math.random() * maxX + "px";
+        target.style.top = Math.random() * maxY + "px";
+        target.style.display = 'block';
+
+        // Difficulty scaling (2.0s down to 0.75s)
+        let duration = 750 + (molesLeft / 30 * 1250);
+        if (duration < 750) duration = 750;
+
+        clearTimeout(currentTimer);
+        currentTimer = setTimeout(() => {
+            // Track missed moles
+            if (target.style.display === 'block' && target.dataset.type === 'mole') {
+                missedCount++;
+                updateUI();
+            }
+            nextStep();
+        }, duration);
+    }
+
+    function nextStep() {
+        target.style.display = 'none';
+        if (!gameActive) return;
+        const pause = Math.random() * 600 + 200;
+        setTimeout(runGameLogic, pause);
+    }
+
+    target.onmousedown = function() {
+        if (target.style.display === 'none' || !gameActive) return;
+        
+        if (target.dataset.type === 'mole') {
+            score += 1;
+        } else {
+            score -= 2;
+        }
+        
+        updateUI();
+        target.style.display = 'none';
+        clearTimeout(currentTimer);
+        nextStep();
+    };
+
+    function endGame() {
+        gameActive = false;
+        clearTimeout(currentTimer);
+        target.style.display = 'none';
+
+        const resultTitle = document.getElementById('result-title');
+        const resultScore = document.getElementById('result-score');
+        const nextLink = document.getElementById('next-link');
+
+        resultScreen.style.display = 'flex';
+        resultScore.innerHTML = "Final Score: " + score;
+
+        if (score >= 27) {
+            resultTitle.textContent = "SUCCESS!";
+            resultTitle.style.color = "#2ecc71";
+            
+            nextLink.style.display = "inline-block";
+            nextLink.textContent = "GO TO NEXT LEVEL"; 
+        } else {
+            resultTitle.textContent = "FAILED!";
+            resultTitle.style.color = "#e74c3c";
+            resultScore.innerHTML += "<br><span style='font-size:16px; color:#bdc3c7;'>You need 27+ points to unlock the next level.</span>";
+            
+            nextLink.style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>
+<!--``yeah why not come here for answer/key  "https://lucent-cheesecake-bc5a60.netlify.app"``-->

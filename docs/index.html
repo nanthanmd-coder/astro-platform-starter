@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where the key is?</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 背景色建议深一点，衬托白色小卡片 */
+            background-color: #1a252f;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* 动态生成的图片样式 */
+        .scatter-item {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: white;
+            border: 3px solid white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 1; /* 保证在文字下面 */
+            pointer-events: none; /* 让鼠标可以穿透图片点击按钮 */
+        }
+
+        h1 {
+            font-size: 5em;
+            color: white;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.8);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .start-button {
+            padding: 18px 45px;
+            font-size: 1.8em;
+            background-color: rgba(46, 204, 113, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            transition: all 0.3s;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .start-button:hover {
+            background-color: #27ae60;
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-15px); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Where the key is?</h1>
+    <button class="start-button" onclick="window.location.href='hrd.html';">Start?</button>
+
+    <script>
+        // 定义图片池
+        const images = [];
+        // 添加 10 张鼹鼠图
+        for(let i=1; i<=10; i++) images.push(`mole${i}.jpg`);
+        // 添加 3 张非鼹鼠图
+        for(let i=1; i<=3; i++) images.push(`nonMole${i}.jpg`);
+
+        // 设置生成的总数量
+        const TOTAL_IMAGES = 40; 
+
+        function createScatter() {
+            for (let i = 0; i < TOTAL_IMAGES; i++) {
+                const item = document.createElement('div');
+                item.className = 'scatter-item';
+                
+                // 随机选一张图
+                const randomImg = images[Math.floor(Math.random() * images.length)];
+                item.style.backgroundImage = `url('${randomImg}')`;
+
+                // 随机位置 (0% 到 90%)
+                const posX = Math.random() * 90;
+                const posY = Math.random() * 90;
+                item.style.left = posX + '%';
+                item.style.top = posY + '%';
+
+                // 随机旋转角度 (-45度 到 45度)
+                const rotate = (Math.random() - 0.5) * 90;
+                item.style.transform = `rotate(${rotate}deg)`;
+
+                // 随机大小微调 (0.8倍 到 1.2倍)
+                const scale = 0.8 + Math.random() * 0.4;
+                item.style.transform += ` scale(${scale})`;
+
+                document.body.appendChild(item);
+            }
+        }
+
+        // 页面加载完成后执行
+        window.onload = createScatter;
+    </script>
+</body>
+</html>
+<!--``yeah why not come here for answer/key  "https://lucent-cheesecake-bc5a60.netlify.app"``-->
